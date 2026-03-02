@@ -1,98 +1,42 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/user.dart';
+import 'package:flutter/foundation.dart';
 
+/// Firestore service stub — Firebase is not yet configured.
+/// This provides a no-op implementation so the rest of the app compiles.
+/// Replace with real Firestore calls once Firebase is set up.
 class FirestoreService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  // User Collection Reference
-  CollectionReference<Map<String, dynamic>> get _usersRef => 
-      _firestore.collection('users');
-
-  /// Create or update user document
-  Future<void> createUserDocument(User user) async {
-    await _usersRef.doc(user.id).set({
-      'id': user.id,
-      'email': user.email,
-      'displayName': user.displayName,
-      'photoUrl': user.photoUrl,
-      'isGuest': user.isGuest,
-      'createdAt': FieldValue.serverTimestamp(),
-      'lastLoginAt': FieldValue.serverTimestamp(),
-      'favorites': user.favorites ?? [],
-      'preferences': user.preferences ?? {},
-    });
+  /// Create or update user document (no-op)
+  Future<void> createUserDocument(Map<String, dynamic> userData) async {
+    debugPrint('[FirestoreService] createUserDocument stub called');
   }
 
-  /// Update user profile
+  /// Update user profile (no-op)
   Future<void> updateUserProfile(String userId, Map<String, dynamic> data) async {
-    await _usersRef.doc(userId).update({
-      ...data,
-      'lastLoginAt': FieldValue.serverTimestamp(),
-    });
+    debugPrint('[FirestoreService] updateUserProfile stub called');
   }
 
-  /// Get user document
-  Future<User?> getUserDocument(String userId) async {
-    final doc = await _usersRef.doc(userId).get();
-    if (!doc.exists) return null;
-    
-    final data = doc.data()!;
-    return User(
-      id: data['id'] as String,
-      email: data['email'] as String?,
-      displayName: data['displayName'] as String?,
-      photoUrl: data['photoUrl'] as String?,
-      isGuest: data['isGuest'] as bool?,
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
-      lastLoginAt: (data['lastLoginAt'] as Timestamp?)?.toDate(),
-      favorites: List<String>.from((data['favorites'] as List<dynamic>?) ?? []),
-      preferences: Map<String, dynamic>.from((data['preferences'] as Map<dynamic, dynamic>?) ?? {}),
-    );
+  /// Get user document (returns null)
+  Future<Map<String, dynamic>?> getUserDocument(String userId) async {
+    debugPrint('[FirestoreService] getUserDocument stub called');
+    return null;
   }
 
-  /// Delete user document
+  /// Delete user document (no-op)
   Future<void> deleteUserDocument(String userId) async {
-    await _usersRef.doc(userId).delete();
+    debugPrint('[FirestoreService] deleteUserDocument stub called');
   }
 
-  /// Add to favorites
+  /// Add to favorites (no-op)
   Future<void> addToFavorites(String userId, String animeId) async {
-    await _usersRef.doc(userId).update({
-      'favorites': FieldValue.arrayUnion([animeId]),
-    });
+    debugPrint('[FirestoreService] addToFavorites stub called');
   }
 
-  /// Remove from favorites
+  /// Remove from favorites (no-op)
   Future<void> removeFromFavorites(String userId, String animeId) async {
-    await _usersRef.doc(userId).update({
-      'favorites': FieldValue.arrayRemove([animeId]),
-    });
+    debugPrint('[FirestoreService] removeFromFavorites stub called');
   }
 
-  /// Update preferences
+  /// Update preferences (no-op)
   Future<void> updatePreferences(String userId, Map<String, dynamic> preferences) async {
-    await _usersRef.doc(userId).update({
-      'preferences': preferences,
-    });
-  }
-
-  /// Stream user document
-  Stream<User?> streamUserDocument(String userId) {
-    return _usersRef.doc(userId).snapshots().map((doc) {
-      if (!doc.exists) return null;
-      
-      final data = doc.data()!;
-      return User(
-        id: data['id'] as String,
-        email: data['email'] as String?,
-        displayName: data['displayName'] as String?,
-        photoUrl: data['photoUrl'] as String?,
-        isGuest: data['isGuest'] as bool?,
-        createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
-        lastLoginAt: (data['lastLoginAt'] as Timestamp?)?.toDate(),
-        favorites: List<String>.from((data['favorites'] as List<dynamic>?) ?? []),
-        preferences: Map<String, dynamic>.from((data['preferences'] as Map<dynamic, dynamic>?) ?? {}),
-      );
-    });
+    debugPrint('[FirestoreService] updatePreferences stub called');
   }
 }

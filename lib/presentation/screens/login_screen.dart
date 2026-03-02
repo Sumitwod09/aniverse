@@ -6,6 +6,7 @@ import '../../core/theme/app_typography.dart';
 import '../../data/providers/auth_providers.dart';
 import '../widgets/buttons.dart';
 import '../widgets/custom_app_bar.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -28,24 +29,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _submit() {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
+    // For now, sign in as guest since Firebase auth is not yet configured
+    _signInAsGuest();
+  }
 
-    if (email.isEmpty || password.isEmpty) {
-      return;
-    }
-
-    if (_isSignUp) {
-      ref.read(authNotifierProvider.notifier).signUpWithEmailPassword(
-            email,
-            password,
-          );
-    } else {
-      ref.read(authNotifierProvider.notifier).signInWithEmailPassword(
-            email,
-            password,
-          );
-    }
+  void _signInAsGuest() {
+    ref.read(authNotifierProvider.notifier).signInAsGuest();
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+    );
   }
 
   @override
@@ -115,45 +107,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: AppSpacing.xl),
 
             // Submit button
-            authState.maybeWhen(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (message) => Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.error, color: AppColors.error),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Text(
-                            message,
-                            style: AppTypography.body.copyWith(
-                              color: AppColors.error,
-                            ),
+            authState.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Column(
+                    children: [
+                      if (authState.isError) ...[
+                        Container(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.error, color: AppColors.error),
+                              const SizedBox(width: AppSpacing.sm),
+                              Expanded(
+                                child: Text(
+                                  authState.error ?? 'An error occurred',
+                                  style: AppTypography.body.copyWith(
+                                    color: AppColors.error,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        const SizedBox(height: AppSpacing.md),
                       ],
-                    ),
+                      PrimaryButton(
+                        text: _isSignUp ? 'Create Account' : 'Sign In',
+                        width: double.infinity,
+                        onPressed: _submit,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  PrimaryButton(
-                    text: _isSignUp ? 'Create Account' : 'Sign In',
-                    width: double.infinity,
-                    onPressed: _submit,
-                  ),
-                ],
-              ),
-              orElse: () => PrimaryButton(
-                text: _isSignUp ? 'Create Account' : 'Sign In',
-                width: double.infinity,
-                onPressed: _submit,
-              ),
-            ),
             const SizedBox(height: AppSpacing.md),
 
             // Toggle sign in/up
@@ -193,14 +181,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             const SizedBox(height: AppSpacing.md),
 
-            // Google sign in
+            // Continue as guest
             SecondaryButton(
-              text: 'Continue with Google',
-              icon: Icons.g_mobiledata,
+              text: 'Continue as Guest',
+              icon: Icons.person_outline,
               width: double.infinity,
-              onPressed: () {
-                ref.read(authNotifierProvider.notifier).signInWithGoogle();
-              },
+              onPressed: _signInAsGuest,
             ),
           ],
         ),
